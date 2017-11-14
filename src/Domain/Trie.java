@@ -1,4 +1,5 @@
 package Domain;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -34,14 +35,14 @@ public class Trie {
 		
 		for( ; i< s.length(); i++)
 		{
-			if(currentNode.get( s.charAt(i) ) == null)	// se no nó atual não existir uma referencia para um nó apontado pelo caractere da vez
+			if(currentNode.getChildAt( s.charAt(i) ) == null)	// se no nó atual não existir uma referencia para um nó apontado pelo caractere da vez
 			{
-				currentNode.put( s.charAt(i) );	// cria um nó para ser apontado pelo caractere analizado. 
+				currentNode.putChildAt( s.charAt(i) );	// cria um nó para ser apontado pelo caractere analizado. 
 			}
-			currentNode = currentNode.get( s.charAt(i) ); // avança o ponteiro para o nó apontado por 'currentChar'.
+			currentNode = currentNode.getChildAt( s.charAt(i) ); // avança o ponteiro para o nó apontado por 'currentChar'.
 		}
 		
-		currentNode.setFim(true); // seta o nó pra ser fim.		
+		currentNode.setFinal(true); // seta o nó pra ser fim.		
 	}
 	
 	/**
@@ -57,14 +58,80 @@ public class Trie {
 		
 		for( ; i< s.length(); i++)
 		{
-			if(currentNode.get( s.charAt(i) ) != null)	// se no nó atual existir uma referencia para um nó apontado pelo caractere da vez.
+			if(currentNode.getChildAt( s.charAt(i) ) != null)	// se no nó atual existir uma referencia para um nó apontado pelo caractere da vez.
 			{
-				currentNode = currentNode.get( s.charAt(i) );	// avança o ponteiro para o nó apontado pelo caractere. 
+				currentNode = currentNode.getChildAt( s.charAt(i) );	// avança o ponteiro para o nó apontado pelo caractere. 
 			}
 			else
 				return false;
 		}
-		return currentNode.isFim();
+		return currentNode.isFinal();
+	}
+	
+	/**
+	private boolean searchR(String s, int i, TriNode n)
+	{
+		if(n != null && s != null && i >= 0) {
+			if(i == s.length())
+			{
+				if(n.isFim()) return true;
+				else return false;
+			}
+			if(n.get(s.charAt(i)) != null) searchR( s, i+1, n.get(s.charAt(i)) );
+			else return false;
+		}
+		return false;	// exceção
+	}
+	**/
+	
+	public void removeWord(String s) {removeR(s,0,raiz);}
+	
+	private TriNode removeR(String s, int i, TriNode n)
+	{
+		if(n != null && s != null && i >= 0) {
+			if(i == s.length())
+			{
+				if(n.isFinal()) return n;
+				else return null;
+			}
+			if(n.getChildAt(s.charAt(i)) != null)
+			{
+				TriNode child = removeR( s, i+1, n.getChildAt(s.charAt(i)) );
+				if(child != null)
+				{
+					if(child.hasNoChild())
+					{
+						n.removeChildAt(s.charAt(i)); // remove o filho dos links
+						//child = null; // aponta o filho pra null;
+					}
+					else
+					{
+						child.setFinal(false);
+					}
+				}
+				return n;
+			}
+			else return null;
+		}
+		else return null;	// exceção
+	}
+	
+	public void printAll()
+	{
+		ArrayList<String> collected = collector(raiz);
+		
+	}
+	
+	private ArrayList<String> collector(TriNode n, StringBuilder s, ArrayList<String> queue)
+	{
+		for(TriNode child: n.getChilds()) // não é iteravel(?)
+		{
+			if(child.isFinal() == true) queue.add(s.toString()); 
+			if(child.hasNoChild() == false) s.append(child.getValor()); 
+			String key = new String();
+			
+		}
+		return collected;		
 	}
 	
 	/**
@@ -79,7 +146,7 @@ public class Trie {
 		/**
 		 * Indica se o nó é o fim de uma string.
 		 */
-		protected boolean fim;
+		protected boolean endOfString;
 		
 		/**
 		 * Array de referências para o próximo nó
@@ -91,7 +158,7 @@ public class Trie {
 		 */
 		public TriNode()
 		{
-			this.fim = false;
+			this.endOfString = false;
 			this.links = new HashMap<Character,TriNode>(30);
 		}
 		
@@ -102,7 +169,7 @@ public class Trie {
 		public TriNode(char valor)
 		{
 			this.valor = valor;
-			this.fim = false;
+			this.endOfString = false;
 			this.links = new HashMap<Character,TriNode>(30);
 		}
 		
@@ -110,9 +177,17 @@ public class Trie {
 		 * @param key endereço do nó em 'links'
 		 * @return TriNode apontado por 'key' em 'links', caso ele exista. Do contrário, retorna null.
 		 */
-		public TriNode get(char key)
+		public TriNode getChildAt(char key)
 		{
 			return links.get(key);
+		}
+		
+		/**
+		 * @return valor deste nó.
+		 */
+		public char getValor()
+		{
+			return this.valor;
 		}
 		
 		/**
@@ -120,24 +195,53 @@ public class Trie {
 		 * @param key chave que será associada ao próximo que será adicionado
 		 * @return o TriNode que foi adicionado a árvore.
 		 */
-		public TriNode put(char key)
+		public void putChildAt(char key)
 		{
 			links.put(key,new TriNode(key));	// cria um novo nó e o associa a 'key' passada
-			return links.get(key);	// retorna uma referência para o nó criado.
 		}
 		
 		/**
 		 * @return 'true', se estiver chegado ao final de uma string armazenada, 'false' caso contrário
 		 */
-		public boolean isFim() {return fim;}
+		public boolean isFinal() 
+		{
+			return endOfString;
+		}
+		
+		/**
+		 * @return os filhos desse nó.
+		 */
+		public HashMap<Character,TriNode> getChilds() 
+		{
+			return links;
+		}
 		
 		/**
 		 * Altera o valor de 'fim' para o passado como parametro nesta função.
 		 * @param fim novo valor de 'fim'
 		 */
-		public void setFim (boolean fim) {this.fim = fim;}
+		public void setFinal (boolean fim) 
+		{
+			this.endOfString = fim;
+		}
+		
+		/**
+		 * @return 'true' se este nó não aponta para nenhum outro nó, 'false' caso contrário.
+		 */
+		public boolean hasNoChild()
+		{
+			return links.isEmpty();
+		}
+		
+		/**
+		 * Remove um nó filho deste nó.
+		 * @param k nó a ser removido
+		 */
+		public void removeChildAt(char k)
+		{
+			links.remove(k);
+		}
 		
 	}
 	
-
 }
