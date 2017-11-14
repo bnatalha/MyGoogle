@@ -28,7 +28,7 @@ public class MainWindow{
 	private JTextArea resultsArea;
 
 	/**
-	 * Launch the application.
+	 * Launch the application.tet
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
