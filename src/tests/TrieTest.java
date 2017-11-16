@@ -1,12 +1,15 @@
 package tests;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import Domain.Trie;	// Classe a ser testada
+import domain.Trie;
 
 /**
+ * Testes para a classe Trie.
  * @author Natália Azevedo de Brito
  */
 class TrieTest {
@@ -20,6 +23,7 @@ class TrieTest {
 		test = new Trie();
 		test.insertWord("aba");
 		test.insertWord("abe");
+		test.insertWord("ab");
 	}
 
 	/**
@@ -28,26 +32,89 @@ class TrieTest {
 	@Test
 	void testinsertion1() {
 		assertEquals(true,test.search("aba"));
+		assertEquals(true,test.search("abe"));
+		assertEquals(true,test.search("ab"));
+		assertEquals(false,test.search("abc"));
 	}
 	
 	/**
-	 * Testa uma busca inválida.
+	 * Testa a remoção.
 	 */
-	@Test
-	void testsearch1() {
-		assertEquals(false,test.search("asa"));
-	}
-	
 	@Test
 	void testremove1() {
 		test.removeWord("aba");
+		assertEquals(false,test.search("aba"));
 		assertEquals(true,test.search("abe"));
+		assertEquals(true,test.search("ab"));
 	}
 	
+	/**
+	 * Testa a remoção.
+	 */
 	@Test
 	void testremove2() {
+		test.removeWord("ab");
+		assertEquals(true,test.search("aba"));
+		assertEquals(true,test.search("abe"));
+		assertEquals(false,test.search("ab"));
+	}
+	
+	/**
+	 * Testa a remoção.
+	 */
+	@Test
+	void testremove3() {
+		test.removeWord("ab");
 		test.removeWord("aba");
 		assertEquals(false,test.search("aba"));
+		assertEquals(true,test.search("abe"));
+		assertEquals(false,test.search("ab"));
 	}
-
+	
+	/**
+	 * Testa a remoção.
+	 */
+	@Test
+	void testremove4() {
+		test.removeWord("aba");
+		test.removeWord("ab");
+		assertEquals(false,test.search("aba"));
+		assertEquals(true,test.search("abe"));
+		assertEquals(false,test.search("ab"));
+	}
+	
+	/**
+	 * Testa a remoção.
+	 */
+	@Test
+	void testremove5() {
+		test.removeWord("aba");
+		test.removeWord("abe");
+		test.removeWord("ab");
+		assertEquals(false,test.search("aba"));
+		assertEquals(false,test.search("abe"));
+		assertEquals(false,test.search("ab"));
+	}
+	
+	/**
+	 * Testa o coletor de strings.
+	 */
+	@Test
+	void testcollector() {
+		ArrayList<String> strings = test.getStrings();
+		boolean foundABA = false;
+		boolean foundABE = false;
+		boolean foundAB = false;
+		
+		for (String s : strings)
+		{
+			if (s.equals("aba")) foundABA = true;
+			else if (s.equals("abe")) foundABE = true;
+			else if (s.equals("ab")) foundAB = true;
+		}
+		
+		assertEquals(true,foundABA);
+		assertEquals(true,foundABE);
+		assertEquals(true,foundAB);
+	}
 }
