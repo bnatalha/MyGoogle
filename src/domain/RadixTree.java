@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 /**
  * Simula uma Árvore Radix. Obedece a ordem natural das strings.
+ * 
+ * obs: pensar em como fica remove e insert e search para a indexação de mais de uma palavra e sua origem
  *  
  * @author Natália Azevedo de Brito
  */
@@ -137,6 +139,7 @@ public class RadixTree
 			if( suitable_child == null)
 			{
 				RadixNode newchild = new RadixNode(ALPHABET_SIZE,str);
+				newchild.setEndOfString(true); 
 				n.addChild(newchild);				
 			}
 			else
@@ -169,9 +172,10 @@ public class RadixTree
 					// seta endOfString para falso
 					suitable_child.setEndOfString(false);
 					
-					//adiciona o novo nó e o nó da string a ser inserida como filhos do original
+					//adiciona o novo nó e como filho do original
 					suitable_child.addChild(newNode);
-					suitable_child.addChild(new RadixNode(ALPHABET_SIZE,str));
+					//insere o novo pedaço de string para ser filho do no original
+					insertW(suitable_child,str);
 				}
 				else if( separator == str.length() && separator < suitable_child.getLength() )
 				{
@@ -202,6 +206,99 @@ public class RadixTree
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param s
+	 */
+	public void removeWord(String s)
+	{
+		if(s != null) searchAndRemoveW(root,s);
+	}
+	
+	/**
+	 * 
+	 * @param n
+	 * @param str
+	 * @return
+	 */
+	private RadixNode searchAndRemoveW(RadixNode n, String str)
+	{
+		// busca / descida
+		if (n != null)
+		{
+			RadixNode suitable_child = n.getChildAt(getPosition(str));
+			if( suitable_child == null)
+			{
+				return null;				
+			}
+			else
+			{
+				int separator = getDiffCharIndex(str,suitable_child.getLabel());
+				if( separator < str.length() && separator == suitable_child.getLength() )
+				{
+					str = str.substring(separator, str.length()); //?
+					suitable_child = searchAndRemoveW(suitable_child,str);
+					
+					// Remoção 2º nível: o que acontece com o pai
+					if(suitable_child == null) return null;
+					else
+					{
+						removeW(n,suitable_child);
+					}					
+				}
+				else if( separator == str.length() && separator == suitable_child.getLength() )
+				{
+					if(suitable_child.isEndOfString()) // encontrou a string;
+					{
+						// Remoção 1º nível: na folha
+						
+						// seta fim de string pra falso
+						suitable_child.setEndOfString(false);
+						
+						return suitable_child;
+						
+					}
+				}
+				else return null;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @param father
+	 * @param child
+	 * @return
+	 */
+	private RadixNode removeW(RadixNode father, RadixNode child)
+	{
+		if(child.isLeaf())	// se o filho é folha
+		{
+			father.removeChild(child);
+			
+			//se father só tem um filho e este não for fim de string, absorva-o para o pai
+			if(father.currentChildsCounter() == 1 && father.isEndOfString() == false)
+			{
+				//acha filho único
+				RadixNode only_child = father.getFirstNonNullChild();
+				
+				// concatena suas labels
+				father.setLabel(father.getLabel() + only_child.getLabel());
+				
+				// atualiza o end of string do nó pai nó com o do seu filho
+				father.setEndOfString(only_child.isEndOfString());
+				
+				// os netos viram filhos
+				father.setChilds(only_child.getChilds());
+				
+				// o filho único é deletado
+				father.removeChild(only_child);
+			}
+		}
+		return father; // retorna este nó /o pai para ser a próxima criança analizada.
 	}
 	
 	// ================================================ NÓ ================================================
@@ -310,6 +407,28 @@ public class RadixTree
 		public RadixNode[] getChilds() {
 			return childs;
 		}
+		
+		/**
+		 * @return número de filho não nulos
+		 */
+		public int currentChildsCounter()
+		{
+			int sum = 0;
+			for (int i = 0; i < MAX_CHILDS; i++)
+			{
+				if(childs[i] != null) sum++;
+			}
+			return sum;
+		}
+		
+		/**
+		 * @return número de filho não nulos
+		 */
+		public boolean isLeaf()
+		{
+			if(currentChildsCounter() == 0) return true;
+			return false;
+		}
 
 		/**
 		 * @param childs the childs to set
@@ -354,9 +473,35 @@ public class RadixTree
 			return this.childs[index];
 		}
 		
+		/**
+		 * @param index posição do nó filho
+		 * @return nó filho da posição 'index' caso ele exista.
+		 */
+		public RadixNode getFirstNonNullChild() {
+			
+			for (int i = 0; i < MAX_CHILDS; i++ )
+			{
+				if(childs[i] != null) return childs[i];
+			}
+			return null;
+		}
+		
+		/**
+		 * 
+		 * @param n nó a ser adicionado como filho
+		 */
 		public void addChild(RadixNode n)
 		{
 			childs[n.getRanking()] = n;
+		}
+		
+		/**
+		 * 
+		 * @param n nó filho a ser removido
+		 */
+		public void removeChild(RadixNode n)
+		{
+			if(n != null) childs[n.getRanking()] = null;
 		}
 	}
 }
