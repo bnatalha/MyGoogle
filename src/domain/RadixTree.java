@@ -245,7 +245,7 @@ public class RadixTree
 					if(suitable_child == null) return null;
 					else
 					{
-						removeW(n,suitable_child);
+						return removeW(n,suitable_child);
 					}					
 				}
 				else if( separator == str.length() && separator == suitable_child.getLength() )
