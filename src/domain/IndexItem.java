@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Se tiver mais de uma palavra por linha?
  * @author Natália Azevedo de Brito
  */
-public class MyIndexItem
+public class IndexItem
 {
 	/**
 	 * Palavra indexada 	 
@@ -16,15 +16,15 @@ public class MyIndexItem
 	/**
 	 * Armazena um conjunto de informações referentes aos arquivos fonte onde este item foi encontrado.
 	 */
-	private ArrayList<IndexSource> sources;
+	private ArrayList<IndexItemSource> sources;
 	
 	/**
 	 * Constrói um MyIndexItem a partir de uma palavra.
 	 */
-	public MyIndexItem(String word)
+	public IndexItem(String word)
 	{
 		this.word = word;
-		this.sources = new ArrayList<IndexSource>();
+		this.sources = new ArrayList<IndexItemSource>();
 	}
 	
 	/**
@@ -34,12 +34,12 @@ public class MyIndexItem
 	 */
 	public void addOcurrenceAt(String filename, int line)
 	{
-		IndexSource in_src = findSource(filename);	// pesquisa pelo IndexSource de 'filename'
+		IndexItemSource in_src = findSource(filename);	// pesquisa pelo IndexSource de 'filename'
 		
 		// caso não encontre, cria um IndexSource para este arquivo e o adiciona as fontes
 		if(in_src == null)	
 		{
-			in_src = new IndexSource("filename");	
+			in_src = new IndexItemSource("filename");	
 			sources.add(in_src);
 		}
 		
@@ -51,9 +51,9 @@ public class MyIndexItem
 	 * @param filename
 	 * @return Se encontrar, retorna uma referência para o IndexSource. Caso não encontre, retorna 'null'. 
 	 */
-	private IndexSource findSource(String filename)
+	private IndexItemSource findSource(String filename)
 	{
-		for(IndexSource s : sources)	// Procura pelo IndexSource do arquivo 'filename'
+		for(IndexItemSource s : sources)	// Procura pelo IndexSource do arquivo 'filename'
 			if(s != null)
 				if(s.getFilename().equals(filename))	// se Achou uma IndexSource para este arquivo
 					return s;
@@ -62,9 +62,29 @@ public class MyIndexItem
 	}
 	
 	/**
+	 * @return Uma string organizada com todas as ocorrências dessa palavra no banco de dados.
+	 */
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder("\""+ word + "\":");
+		if(sources.isEmpty())
+		{
+			sb.append("\n\tNot Found.");
+		}
+		else
+		{
+			for(IndexItemSource iis : sources)
+			{
+				sb.append("\n\t" + iis.toString());
+			}
+		}		
+		return sb.toString();
+	}
+	
+	/**
 	 * Lugares onde podem ser encontrados a palavra indexada
 	 */
-	public class IndexSource
+	private class IndexItemSource
 	{		
 		/**
 		 * Nome do arquivo referente as ocorrências
@@ -74,23 +94,23 @@ public class MyIndexItem
 		/**
 		 * Linhas onde a palavra foi encontrada
 		 */		
-		private ArrayList<Integer> lines;
+		private ArrayList<Integer> ocurrences;
 		
 		/**
 		 * Constrói um MyIndexItem para um arquivo .txt
 		 * @param filename nome do arquivo .txt
 		 */
-		public IndexSource(String filename)
+		public IndexItemSource(String filename)
 		{
 			this.filename = filename;
-			this.lines = new ArrayList<Integer>();
+			this.ocurrences = new ArrayList<Integer>();
 		}
 		
 		/**
 		 * Adiciona uma ocorrência na linha 'line'.
 		 */
 		public void addLine(int line) {
-			lines.add(line);
+			ocurrences.add(line);
 		}
 
 		/**
@@ -104,7 +124,41 @@ public class MyIndexItem
 		 * @return the ocurrences
 		 */
 		public ArrayList<Integer> getOcurrences() {
-			return lines;
+			return ocurrences;
+		}
+		
+		/**
+		 * @return Uma string organizada com as ocorrências encontradas neste arquivo.
+		 */
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder("On file '" + filename + "', ");	
+			
+			// Se não tiver linhas, não houveram ocorrências.
+			if(ocurrences.isEmpty())
+			{
+				sb.append("no ocurrences.");
+			}
+			// caso contrário, houveram ocorrências
+			else
+			{
+				sb.append("found at:\n");
+				
+				for (Integer i : ocurrences)	// acrescenta as linhas onde houve ocorrência
+					sb.append(" line "+ i + ";");
+				
+				sb.deleteCharAt(sb.length()-1);	//deleta última virgula inserida
+				sb.append('.');	// coloca um ponto final.
+			}
+			return sb.toString();
+		}
+		
+		/**
+		 * @return 'true' se não existir ocorrências para este arquivo.
+		 */
+		public boolean isEmpty() {
+			return ocurrences.isEmpty();
 		}
 	}	
 	
