@@ -69,14 +69,18 @@ public class RadixTree
 	 * @param str palavra a ser procurada.
 	 * @return 'true' caso a palavra seja encontrada.
 	 */
-	public ArrayList<String> collectStrings(String str, boolean WHOLE_WORD)
+	private ArrayList<String> collectStrings(String str, boolean WHOLE_WORD)
 	{
 		if(str != null)
 		{
-			StringBuilder str_buildr = new StringBuilder(WHOLE_WORD ? "": str);	// constrói uma string usando 'str' como prefixo
 			ArrayList<String> collected  = new ArrayList<String>(); //
 			RadixNode startingNode =  WHOLE_WORD? root : searchW(root,str,false);
-			collector(startingNode,str_buildr,collected);
+			StringBuilder str_buildr = new StringBuilder(
+					WHOLE_WORD ? "":
+						str.substring(0,
+									startingNode.getFatherHeight() + startingNode.getLength() - 1 )
+					);	// constrói uma string usando 'str' como prefixo
+			return collector(startingNode,str_buildr,collected);
 		}
 		return null;
 	}
@@ -90,7 +94,11 @@ public class RadixTree
 	{
 		if(str != null)
 		{
-			return (searchW(root,str,true) == null ? false:true);
+			RadixNode result = searchW(root,str,true);
+			if (result == null)
+				return false;
+			else
+				return result.isEndOfString();
 		}
 		return false;
 	}
@@ -181,7 +189,7 @@ public class RadixTree
 		// SUBIDA
 		//
 		if(n.getLabel() != null) // se não for raiz; 
-			s.deleteCharAt(s.length()-1);	// deleta o ultimo caractere adicionado.
+			s.delete(n.getFatherHeight(),	s.length());	// deleta o ultimo caractere adicionado.
 		
 		return queue;		
 	}
@@ -223,51 +231,17 @@ public class RadixTree
 				{
 					// corta a string a ser inserida para ser apenas a parte q tem seu sufixo diferenciado
 					str = str.substring(separator);
-					// cria uma nova string com a parte diferente pertencente ao label do nó analizado
-					String newLabel = suitable_child.getLabel().substring(separator);
 					
-					//Cria um nó com o label cortado do nó original
-					RadixNode newNode = new RadixNode(ALPHABET_SIZE,newLabel);	
+					// Divide o nó escolhido e retorna o novo nó mais alto
+					RadixNode newNode = makeChildFrom(suitable_child, separator, false);
 					
-					//move os filhos do nó analizado para o novo nó
-					newNode.setChilds(suitable_child.getChilds());
-					// faz com que o novo nó indica o final de uma string caso o nó de onde ele originou seja.
-					newNode.setEndOfString(suitable_child.isEndOfString());
-					
-					// cria um novo array de filhos vazio para o nó original
-					suitable_child.setChilds(new RadixNode[ALPHABET_SIZE]);
-					// modifica sua label para o prefixo em comum 
-					suitable_child.setLabel(suitable_child.getLabel().substring(0,separator));
-					// seta endOfString para falso
-					suitable_child.setEndOfString(false);
-					
-					//adiciona o novo nó e como filho do original
-					suitable_child.addChild(newNode);
 					//insere o novo pedaço de string para ser filho do no original
 					insertW(suitable_child,str);
 				}
 				else if( separator == str.length() && separator < suitable_child.getLength() )
 				{
-					// cria uma nova string com o sufixo diferente pertencente ao label do nó original
-					String newLabel = suitable_child.getLabel().substring(separator);
-					
-					// Cria um nó com o label cortado do nó original
-					RadixNode newNode = new RadixNode(ALPHABET_SIZE,newLabel);	
-					
-					// move os filhos do nó analizado para o novo nó
-					newNode.setChilds(suitable_child.getChilds());
-					// faz com que o novo nó indica um final de uma string caso o original seja.
-					newNode.setEndOfString(suitable_child.isEndOfString());
-					
-					// cria um novo array de filhos vazio para o nó original
-					suitable_child.setChilds(new RadixNode[ALPHABET_SIZE]);
-					// modifica a label do nó original para o prefixo em comum 
-					suitable_child.setLabel(suitable_child.getLabel().substring(0,separator));
-					// seta endOfString para verdadeiro
-					suitable_child.setEndOfString(true);
-					
-					//adiciona o novo nó como filho do original
-					suitable_child.addChild(newNode);
+					// Divide o nó escolhido e retorna o novo nó mais alto
+					RadixNode newNode = makeChildFrom(suitable_child, separator, true);
 				}
 				else if( separator == str.length() && separator == suitable_child.getLength() )
 				{
@@ -275,6 +249,41 @@ public class RadixTree
 				}
 			}
 		}
+	}
+	
+	private RadixNode makeChildFrom(RadixNode n, int separator, boolean END_OF_STRING)
+	{
+		// DIVISÃO
+		// cria uma nova string com o sufixo diferente pertencente ao label do nó original
+		String newLabel = n.getLabel().substring(separator);
+		
+		// Cria um nó com o label cortado do nó original
+		RadixNode newNode = new RadixNode(ALPHABET_SIZE,newLabel);	
+		
+		// modifica a label do nó original para o prefixo em comum 
+		n.setLabel(n.getLabel().substring(0,separator));
+		
+		// modifica altura do pai do novo nó guardada nele
+		newNode.setFatherHeight(n.getFatherHeight() +
+				n.getLength());
+		
+		// REORGANIZANDO FILHOS
+		// move os filhos do nó analizado para o novo nó
+		newNode.setChilds(n.getChilds());
+		
+		// cria um novo array de filhos vazio para o nó original
+		n.setChilds(new RadixNode[ALPHABET_SIZE]);
+		
+		// faz com que o novo nó indica um final de uma string caso o original seja.
+		newNode.setEndOfString(n.isEndOfString());
+		
+		// seta endOfString para o valor de END_OF_STRING
+		n.setEndOfString(END_OF_STRING);
+		
+		//adiciona o novo nó para ser filho do original
+		n.addChild(newNode);
+		
+		return newNode;
 	}
 	
 	/**
@@ -413,7 +422,7 @@ public class RadixTree
 		/**
 		 * Guarda informações sobre a origem de uma palavra. 
 		 */
-		private MyIndexItem indexitem;
+		private IndexItem indexitem;
 		
 		
 		/**
@@ -427,7 +436,7 @@ public class RadixTree
 			
 			for (int i = 0; i < MAX_CHILDS; i++)
 			{
-				if(childs[i] != null) childs[i].setFatherHeight( this.getLength());
+				if(childs[i] != null) childs[i].setFatherHeight( this.getLength() + this.fatherHeight);
 			}
 		}
 		
@@ -541,7 +550,7 @@ public class RadixTree
 			
 			for (int i = 0; i < MAX_CHILDS; i++)
 			{
-				if(childs[i] != null) childs[i].setFatherHeight(this.getLength());
+				if(childs[i] != null) childs[i].setFatherHeight(this.getLength() + this.fatherHeight);
 			}
 		}
 		
@@ -562,14 +571,14 @@ public class RadixTree
 		/**
 		 * @return the indexitem
 		 */
-		public MyIndexItem getIndexItem() {
+		public IndexItem getIndexItem() {
 			return indexitem;
 		}
 
 		/**
 		 * @param indexitem the indexitem to set
 		 */
-		public void setMyIndexItem(MyIndexItem indexitem) {
+		public void setMyIndexItem(IndexItem indexitem) {
 			this.indexitem = indexitem;
 		}
 		
@@ -600,7 +609,7 @@ public class RadixTree
 		 */
 		public void addChild(RadixNode n)
 		{
-			n.setFatherHeight(getLength());
+			n.setFatherHeight(this.getLength() + this.fatherHeight);
 			childs[n.getRanking()] = n;
 		}
 		

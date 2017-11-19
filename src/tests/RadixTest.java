@@ -1,6 +1,9 @@
 package tests;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,6 +123,52 @@ class RadixTest {
 		assertEquals(false,tree.searchWord("ab"));
 		assertEquals(true,tree.searchWord("abc"));
 		assertEquals(true,tree.searchWord("abd"));
+	}
+	
+	/**
+	 * Testa collector para prefixo.
+	 */
+	@Test
+	void testPrefixCollector1() {
+		setupCollector();
+		
+		ArrayList<String> foo = tree.getAllPrefixedStrings("abd");
+		System.out.println("Immprimindo todas strings da arvore:");
+		if(foo != null)
+			for(String s: foo)
+				System.out.println(s);
+		
+		boolean test = true;
+		if(foo == null) test = false;
+		assertEquals(test,true);
+	}
+	
+	/**
+	 * Testa collector pegando todas as strings.
+	 */
+	@Test
+	void testPrefixCollector2() {
+		setupCollector();
+		
+		ArrayList<String> foo = tree.getAllStrings();
+		System.out.println("Immprimindo todas strings da arvore:");
+		if(foo != null)
+			for(String s: foo)
+				System.out.println(s);
+		
+		boolean test = true;
+		if(foo == null) test = false;
+		assertEquals(test,true);
+	}
+	
+	void setupCollector()
+	{
+		tree.insertWord("abc");
+		tree.insertWord("abdd");
+		tree.insertWord("abdda");
+		tree.insertWord("abz");
+		tree.insertWord("a");
+		tree.insertWord("abdgr");
 	}
 
 }
