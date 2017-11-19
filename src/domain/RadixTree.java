@@ -242,7 +242,8 @@ public class RadixTree
 					str = str.substring(separator, str.length()); //?
 					suitable_child = searchAndRemoveW(suitable_child,str);
 					
-					// Remoção 2º nível: o que acontece com o pai
+					// Remoção 2º nível: 
+					// o que acontece com o nó pai e e seus netos após a retirada do seu filho
 					if(suitable_child == null) return null;
 					else
 					{
@@ -251,15 +252,16 @@ public class RadixTree
 				}
 				else if( separator == str.length() && separator == suitable_child.getLength() )
 				{
+					// Fim da busca
 					if(suitable_child.isEndOfString()) // encontrou a string;
 					{
-						// Remoção 1º nível: na folha
+						// Remoção 1º nível
 						
-						// seta fim de string pra falso
+						// seta fim de string neste nó pra falso
 						suitable_child.setEndOfString(false);
 						
-						return suitable_child;
-						
+						// retorna 
+						return removeW(n,suitable_child);						
 					}
 				}
 				else return null;
@@ -280,7 +282,7 @@ public class RadixTree
 		{
 			father.removeChild(child);
 			
-			//se father só tem um filho e este não for fim de string, absorva-o para o pai
+			//se o pai só tem um filho e este não for fim de string, absorva-o para o pai
 			if(father.currentChildsCounter() == 1 && father.isEndOfString() == false)
 			{
 				//acha filho único
