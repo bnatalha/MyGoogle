@@ -1,6 +1,7 @@
 package domain;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simula uma Árvore Radix. Obedece a ordem natural das strings.
@@ -47,6 +48,40 @@ public class RadixTree
 	}
 	
 	/**
+	 * @return um ArrayList com todas as strings da árvore.
+	 */
+	public ArrayList<String> getAllStrings()
+	{
+		return collectStrings("", true);
+	}
+	
+	/**
+	 * @return um ArrayList com todas as strings da que tem um determinado prefixo em comum.
+	 * @param str prefixo buscado.
+	 */
+	public ArrayList<String> getAllPrefixedStrings(String str)
+	{
+		return collectStrings(str, false);
+	}
+	
+	/**
+	 * Procura por uma palavra na árvore.
+	 * @param str palavra a ser procurada.
+	 * @return 'true' caso a palavra seja encontrada.
+	 */
+	public ArrayList<String> collectStrings(String str, boolean WHOLE_WORD)
+	{
+		if(str != null)
+		{
+			StringBuilder str_buildr = new StringBuilder(WHOLE_WORD ? "": str);	// constrói uma string usando 'str' como prefixo
+			ArrayList<String> collected  = new ArrayList<String>(); //
+			RadixNode startingNode =  WHOLE_WORD? root : searchW(root,str,false);
+			collector(startingNode,str_buildr,collected);
+		}
+		return null;
+	}
+	
+	/**
 	 * Procura por uma palavra na árvore.
 	 * @param str palavra a ser procurada.
 	 * @return 'true' caso a palavra seja encontrada.
@@ -55,7 +90,7 @@ public class RadixTree
 	{
 		if(str != null)
 		{
-			return searchW(root,str);
+			return (searchW(root,str,true) == null ? false:true);
 		}
 		return false;
 	}
@@ -79,19 +114,20 @@ public class RadixTree
 	}
 	
 	/**
-	 * Busca recursiva
+	 * Caso WHOLE_WORD seja 'true', retorna um nó onde tenha achado o fim para a string 'str';
+	 * Caso contrário, retorna o nó cujos descendentes tenha como prefixo 'str'.
 	 * @param n
 	 * @param str
-	 * @return
+	 * @return null ou uma referência para o nó buscado.
 	 */
-	private boolean searchW(RadixNode n, String str)
+	private RadixNode searchW(RadixNode n, String str, boolean WHOLE_WORD)
 	{
 		if (n != null)
 		{
 			RadixNode suitable_child = n.getChildAt(getPosition(str));
 			if( suitable_child == null)
 			{
-				return false;				
+				return null;				
 			}
 			else
 			{
@@ -99,23 +135,55 @@ public class RadixTree
 				if( separator < str.length() && separator == suitable_child.getLength() )
 				{
 					str = str.substring(separator, str.length()); //?
-					return searchW(suitable_child,str);
+					return searchW(suitable_child,str,WHOLE_WORD);
 				}
 				else if( separator < str.length() && separator < suitable_child.getLength() )
 				{
-					return false;	
+					return null;	
 				}
 				else if( separator == str.length() && separator < suitable_child.getLength() )
 				{
-					return false;
+					return (WHOLE_WORD? null: suitable_child);
 				}
 				else if( separator == str.length() && separator == suitable_child.getLength() )
 				{
-					return suitable_child.isEndOfString();
+					return suitable_child;
 				}
 			}
 		}
-		return false;
+		return null;
+	}
+	
+	
+	/**
+	 * Coleta todas as strings desta árvore e as retorna em um ArrayList.
+	 * 
+	 * @param n nó que servirá de inicio para a analise.
+	 * @param s armazenará os caracteres a medida que for passando pelos nós desta árvore
+	 * @param queue armazenará as strings desta árvore
+	 * @return um List<String> com todas as strings armazenadas nesta árvore a partir de um determinado nó.
+	 */
+	private ArrayList<String> collector(RadixNode n, StringBuilder s, ArrayList<String> queue)
+	{
+		// DESCIDA
+		//
+		if(n.getLabel() != null)	// se não for raiz;
+			s.append(n.getLabel());	// adiciona o valor associado ao nó
+		
+		if(n.isEndOfString() == true) 
+			queue.add(s.toString());
+			
+		for(int i = 0; i < ALPHABET_SIZE; i++)	// para todos os nós filhos de 'n'
+		{
+			if(n.getChilds()[i] != null)
+				queue = collector(n.getChilds()[i], s, queue);	// descer por eles e ir coletando seus valores
+		}
+		// SUBIDA
+		//
+		if(n.getLabel() != null) // se não for raiz; 
+			s.deleteCharAt(s.length()-1);	// deleta o ultimo caractere adicionado.
+		
+		return queue;		
 	}
 	
 	/**
@@ -338,6 +406,11 @@ public class RadixTree
 		private boolean endOfString;
 		
 		/**
+		 * Armazena a altura do nó pai. 
+		 */
+		private int fatherHeight;
+		
+		/**
 		 * Guarda informações sobre a origem de uma palavra. 
 		 */
 		private MyIndexItem indexitem;
@@ -351,6 +424,11 @@ public class RadixTree
 			MAX_CHILDS = N;
 			this.endOfString = false;
 			this.childs = new RadixNode[MAX_CHILDS];
+			
+			for (int i = 0; i < MAX_CHILDS; i++)
+			{
+				if(childs[i] != null) childs[i].setFatherHeight( this.getLength());
+			}
 		}
 		
 		/**
@@ -363,6 +441,11 @@ public class RadixTree
 			this.label = label;
 			updateRanking();
 			this.childs = new RadixNode[MAX_CHILDS];
+			
+			for (int i = 0; i < MAX_CHILDS; i++)
+			{
+				if(childs[i] != null) childs[i].setFatherHeight(this.getLength());
+			}
 		}
 		
 		/**
@@ -376,7 +459,8 @@ public class RadixTree
 		 * @return the length of the label
 		 */
 		public int getLength() {
-			return label.length();
+			if(label != null )return label.length();
+			return 0;
 		}
 
 		/**
@@ -394,6 +478,22 @@ public class RadixTree
 		{
 			int divisor = (int) 'a';
 			ranking = ( ((int)(label.charAt(0))) % divisor);
+		}
+		
+		/**
+		 * Retorna a altura do nó pai deste
+		 */
+		public int getFatherHeight()
+		{
+			return this.fatherHeight;
+		}
+		
+		/**
+		 * Fixa a altura do nó pai a este. 
+		 */
+		public void setFatherHeight(int fatherHeight)
+		{
+			this.fatherHeight = fatherHeight;
 		}
 		
 		/**
@@ -438,6 +538,11 @@ public class RadixTree
 		 */
 		public void setChilds(RadixNode[] childs) {
 			this.childs = childs;
+			
+			for (int i = 0; i < MAX_CHILDS; i++)
+			{
+				if(childs[i] != null) childs[i].setFatherHeight(this.getLength());
+			}
 		}
 		
 		/**
@@ -495,6 +600,7 @@ public class RadixTree
 		 */
 		public void addChild(RadixNode n)
 		{
+			n.setFatherHeight(getLength());
 			childs[n.getRanking()] = n;
 		}
 		
