@@ -72,6 +72,7 @@ public class RadixTree
 		while (i != a.length() && i != b.length() )
 		{
 			if(a.charAt(i) != b.charAt(i)) break;
+			i++;
 		}
 		
 		return i;
@@ -98,7 +99,7 @@ public class RadixTree
 				if( separator < str.length() && separator == suitable_child.getLength() )
 				{
 					str = str.substring(separator, str.length()); //?
-					searchW(suitable_child,str);
+					return searchW(suitable_child,str);
 				}
 				else if( separator < str.length() && separator < suitable_child.getLength() )
 				{
@@ -123,7 +124,7 @@ public class RadixTree
 	 */
 	public void insertWord(String str)
 	{
-		
+		if(str != null) insertW(root,str);
 	}
 	
 	/**

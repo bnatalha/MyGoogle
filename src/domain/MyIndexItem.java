@@ -2,6 +2,10 @@ package domain;
 
 import java.util.ArrayList;
 
+/**
+ *  Se tiver mais de uma palavra por linha?
+ * @author Natália Azevedo de Brito
+ */
 public class MyIndexItem
 {
 	/**
