@@ -9,10 +9,10 @@ public final class AND_OR {
 		if(input.indexOf("AND") != -1) {
 			searchAnd(input,input.indexOf("AND"));
 		} else if(input.contains("OR")) {
-			
+			searchOr(input,input.indexOf("Or"));
 		}
 		else {
-			
+			//search input
 		}
 	}
 	
