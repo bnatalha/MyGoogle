@@ -44,7 +44,7 @@ public class MainWindow{
 	private JButton searchBtn;
 	private JTextArea resultsArea;
 	private JFileChooser fc;
-	private DefaultListModel<String>filesL;
+	private DefaultListModel filesL;
 	private JList<String>filesList;
 
 	/**
@@ -78,7 +78,7 @@ public class MainWindow{
 		File dir = new File(System.getProperty("user.dir") + "/db");
 		String[] files = dir.list();
 		
-		filesL = new DefaultListModel<String>();
+		filesL = new DefaultListModel();
 		for(int i=0;i<files.length;i++) {
 			filesL.addElement(files[i]);
 		}
@@ -192,8 +192,7 @@ public class MainWindow{
 		//this new window can be used to remove files from the database
 		JButton listBtn = new JButton("List/Remove Files...");
 		listBtn.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {  
-				//listFiles(listArea);
+			public void actionPerformed(ActionEvent e) {
 				listFrame.setVisible(true);
 				frame.setEnabled(false);
 			}
@@ -239,6 +238,7 @@ public class MainWindow{
             if (inStream != null)inStream.close();
             if (outStream != null)outStream.close();
             
+            filesL.addElement(selectedFile.getName());
             JOptionPane.showMessageDialog(null,"File added successfully");
         	
         	}catch(IOException e1){
@@ -268,13 +268,13 @@ public class MainWindow{
 		panel.add(rmvBtn);
 		rmvBtn.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				 int response = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
-					        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-				 if (response == JOptionPane.YES_OPTION) {
-					 int index = filesList.getSelectedIndex();
-					 String name = filesL.getElementAt(index); 
-					 removeFile(System.getProperty("user.dir") + "/db/" + name);
-					 filesL.removeElementAt(index);
+				int response = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				if (response == JOptionPane.YES_OPTION) {
+					int index = filesList.getSelectedIndex();
+					String name = (String) filesL.getElementAt(index); 
+					removeFile(System.getProperty("user.dir") + "/db/" + name);
+					filesL.removeElementAt(index);
 				 }
 			}
 		});
