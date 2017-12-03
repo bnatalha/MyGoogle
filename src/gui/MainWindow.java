@@ -5,10 +5,13 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,9 +20,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -33,17 +38,19 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MainWindow{
 	
 	private JFrame frame;
+	private JFrame listFrame;
+	private JTextArea listArea;
 	private JTextField searchField;
 	private JButton searchBtn;
 	private JTextArea resultsArea;
 	private JFileChooser fc;
-	private InputStream inStream = null;
-    private OutputStream outStream = null;
+	private DefaultListModel<String>filesL;
+	private JList<String>filesList;
 
 	/**
 	 * Launch the application.tet
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args ) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -64,9 +71,20 @@ public class MainWindow{
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setBounds(100, 100, 450, 300);
 		
-		//Makes the Menu bar
+		//Create the Menu bar
 		makeMenuBar(frame);
 		fillContentPane(frame);
+		
+		File dir = new File(System.getProperty("user.dir") + "/db");
+		String[] files = dir.list();
+		
+		filesL = new DefaultListModel<String>();
+		for(int i=0;i<files.length;i++) {
+			filesL.addElement(files[i]);
+		}
+		
+		//create the file list window
+		listWindow();
 		
 		//Pack all components and set the window visible
 		frame.pack();
@@ -140,8 +158,6 @@ public class MainWindow{
 			public void actionPerformed(ActionEvent e) {  }
 		});
 		
-		
-		
 		//add the search button to the generic panel
 		panel.add(searchBtn);
 		
@@ -163,30 +179,7 @@ public class MainWindow{
 				int returnVal = fc.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File selectedFile = fc.getSelectedFile();
-	                String filePath = selectedFile.getAbsolutePath();
-	                InputStream inStream = null;
-	                OutputStream outStream = null;
-	                try{
-	                    File source =new File(filePath);
-	                    File dest =new File(System.getProperty("user.dir") + "/db",selectedFile.getName());
-	                    inStream = new FileInputStream(source);
-	                    outStream = new FileOutputStream(dest);
-
-	                    byte[] buffer = new byte[1024];
-
-	                    int length;
-	                    while ((length = inStream.read(buffer)) > 0){
-	                        outStream.write(buffer, 0, length);
-	                    }
-
-	                    if (inStream != null)inStream.close();
-	                    if (outStream != null)outStream.close();
-	                    
-	                    JOptionPane.showMessageDialog(null,"File added successfully");
-	                	
-	                	}catch(IOException e1){
-	                		JOptionPane.showMessageDialog(null,"File couldn't be added ");
-	                }
+					addToDb(selectedFile);
 	            }
 			}
 		});
@@ -198,8 +191,12 @@ public class MainWindow{
 		//which will show a new window showing all files in the dabatase
 		//this new window can be used to remove files from the database
 		JButton listBtn = new JButton("List/Remove Files...");
-		addBtn.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {  }
+		listBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {  
+				//listFiles(listArea);
+				listFrame.setVisible(true);
+				frame.setEnabled(false);
+			}
 		});
 		
 		//add the button to the generic panel
@@ -220,5 +217,87 @@ public class MainWindow{
 		
 		//add the text area to the center position on the main frame
 		contentpane.add(resultsArea,BorderLayout.CENTER);
+	}
+	public void addToDb(File selectedFile) {
+		
+        String filePath = selectedFile.getAbsolutePath();
+        InputStream inStream = null;
+        OutputStream outStream = null;
+        try{
+            File source =new File(filePath);
+            File dest =new File(System.getProperty("user.dir") + "/db",selectedFile.getName());
+            inStream = new FileInputStream(source);
+            outStream = new FileOutputStream(dest);
+
+            byte[] buffer = new byte[1024];
+
+            int length;
+            while ((length = inStream.read(buffer)) > 0){
+                outStream.write(buffer, 0, length);
+            }
+
+            if (inStream != null)inStream.close();
+            if (outStream != null)outStream.close();
+            
+            JOptionPane.showMessageDialog(null,"File added successfully");
+        	
+        	}catch(IOException e1){
+        		JOptionPane.showMessageDialog(null,"File couldn't be added ");
+        }
+	}
+	
+	public void listWindow() {
+		//Initialize the list window frame
+		listFrame = new JFrame("File list");
+		
+		//initialize content pane so it can be filled
+		Container contentpane = listFrame.getContentPane();
+		
+		//set the layout as borderlayout
+		contentpane.setLayout(new BorderLayout());
+		
+		//create a generic panel
+		JPanel panel = new JPanel();
+		
+		//create a JList that receives the names of the files, in the db directory, to show
+		filesList = new JList<String>(filesL);
+		contentpane.add(filesList,BorderLayout.CENTER);
+		
+		//create the Remove button and add it to the generic panel
+		JButton rmvBtn = new JButton("Remove file...");
+		panel.add(rmvBtn);
+		rmvBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				 int response = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
+					        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				 if (response == JOptionPane.YES_OPTION) {
+					 int index = filesList.getSelectedIndex();
+					 String name = filesL.getElementAt(index); 
+					 removeFile(System.getProperty("user.dir") + "/db/" + name);
+					 filesL.removeElementAt(index);
+				 }
+			}
+		});
+		
+		//add the panel to the south location of the window
+		contentpane.add(panel,BorderLayout.SOUTH);
+		
+		//re-enable the main window
+		listFrame.addWindowListener( new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent we) {
+                frame.setEnabled(true);
+            }
+        } );
+		
+		//pack and make the window invisible
+		listFrame.pack();
+		listFrame.setVisible(false);
+	}
+	
+	public void removeFile(String path){
+		//create a file object with the path to the selected file and delete it
+		File file = new File(path);
+		file.delete();
 	}
 }
