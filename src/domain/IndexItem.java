@@ -28,7 +28,16 @@ public class IndexItem
 	}
 	
 	/**
+	 * @return palavra indexada por este IndexItem
+	 */
+	public String getWord()
+	{
+		return this.word;
+	}
+	
+	/**
 	 * Adiciona uma ocorrencia do item na linha 'line' do arquivo 'filename'.
+	 * Não adiciona ocorrencias repetidas na mesma 'line' para o mesmo 'filename'.
 	 * @param filename nome do arquivo em que a ocorrência será adicionada
 	 * @param line linha da ocorrência
 	 */
@@ -43,7 +52,10 @@ public class IndexItem
 			sources.add(in_src);
 		}
 		
-		in_src.addLine(new Integer(line));	// adiciona a ocorrência ao IndexSource do arquivo.
+		//caso encontre, checa se a ocorrencia a ser acrecentada ja foi registrada.
+		//se não foi, ela é registrada agora.
+		if (in_src.searchOcurrence(line) == false)
+			in_src.addLine(new Integer(line));	// adiciona a ocorrência ao IndexSource do arquivo.
 	}
 	
 	/**
@@ -79,6 +91,26 @@ public class IndexItem
 			}
 		}		
 		return sb.toString();
+	}
+	
+	/**
+	 * @return true se este index item não tiver uma ocorrência registrada (fazendo dele candidato a destruição)
+	 */
+	public boolean isEmpty()
+	{
+		return this.sources.isEmpty();
+	}
+	
+	/**
+	 * Acrescenta às ocorrencias deste IndexItem todas as ocorrências exclusivas de, se  
+	 */
+	public void absorb (IndexItem ii)	// instanciar novamente a string e o inteiro antes de absorver?
+	{
+		//checar se a palavra dos IdexItem são iguais(?)
+		
+		for(IndexItemSource e : ii.sources)
+			for(Integer i : e.getOcurrences())
+				this.addOcurrenceAt(e.getFilename(), i);
 	}
 	
 	/**
@@ -160,6 +192,12 @@ public class IndexItem
 		public boolean isEmpty() {
 			return ocurrences.isEmpty();
 		}
+		
+		/**
+		 * @return 'true' se existir a ocorrências na linha 'line'.
+		 */
+		public boolean searchOcurrence(int line) {
+			return ocurrences.contains(line);
+		}
 	}	
-	
 }

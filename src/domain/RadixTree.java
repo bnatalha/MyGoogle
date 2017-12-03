@@ -104,6 +104,25 @@ public class RadixTree
 	}
 	
 	/**
+	 * Procura por uma palavra na árvore.
+	 * @param str palavra a ser procurada.
+	 * @return Uma referência para o IndexItem da palavra procurada caso ela exista na árvore. Do contrário, retorna null.
+	 */
+	public IndexItem searchIndexItem(String str)
+	{
+		if(str != null)
+		{
+			RadixNode result = searchW(root,str,true);
+			if (result != null)
+				if (result.isEndOfString() == true )
+					return result.getIndexItem();
+			else
+				return null;
+		}
+		return null;
+	}
+	
+	/**
 	 * 
 	 * @param a
 	 * @param b
@@ -205,10 +224,23 @@ public class RadixTree
 	
 	/**
 	 * 
+	 * @param s
+	 */
+	public void insertIndexItem(IndexItem ii)
+	{
+		if(ii != null && ii.getWord() != null) {
+			RadixNode found = insertW(root,ii.getWord());
+			if(found != null)
+				found.setIndexItem(ii);
+		}
+	}
+	
+	/**
+	 * 
 	 * @param n
 	 * @param s
 	 */
-	private void insertW(RadixNode n, String str)
+	private RadixNode insertW(RadixNode n, String str)
 	{
 		if (n != null)
 		{
@@ -217,7 +249,9 @@ public class RadixTree
 			{
 				RadixNode newchild = new RadixNode(ALPHABET_SIZE,str);
 				newchild.setEndOfString(true); 
-				n.addChild(newchild);				
+				n.addChild(newchild);
+				
+				return newchild;
 			}
 			else
 			{
@@ -241,14 +275,19 @@ public class RadixTree
 				else if( separator == str.length() && separator < suitable_child.getLength() )
 				{
 					// Divide o nó escolhido e retorna o novo nó mais alto
-					RadixNode newNode = makeChildFrom(suitable_child, separator, true);
+					makeChildFrom(suitable_child, separator, true);
+					
+					return suitable_child;
 				}
 				else if( separator == str.length() && separator == suitable_child.getLength() )
 				{
 					suitable_child.setEndOfString(true);
+					
+					return suitable_child;
 				}
 			}
 		}
+		return null;	//exceção
 	}
 	
 	private RadixNode makeChildFrom(RadixNode n, int separator, boolean END_OF_STRING)
@@ -578,7 +617,7 @@ public class RadixTree
 		/**
 		 * @param indexitem the indexitem to set
 		 */
-		public void setMyIndexItem(IndexItem indexitem) {
+		public void setIndexItem(IndexItem indexitem) {
 			this.indexitem = indexitem;
 		}
 		
