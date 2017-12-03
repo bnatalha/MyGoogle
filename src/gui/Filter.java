@@ -7,20 +7,23 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Filter {
-	private File blacklist;
 	private ArrayList<String> blacklisted;
 	
 	public Filter() {
-		blacklist = new File(System.getProperty("user.dir") + "/blacklist");
+		File blacklist = new File(System.getProperty("user.dir") + "/blacklist");
 		try {
 			Scanner sc = new Scanner(blacklist).useDelimiter("/n");
 			createBlacklist(sc);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		
 	}
-	
+	/**
+	 * 
+	 * Funcao que cria um arraylist de Strings para salvar as palavras da blacklist
+	 * 
+	 * @param  sc  Um objeto do tipo Scanner que lê o arquivo que foi passado
+	 * */
 	public void createBlacklist(Scanner sc) {
 		blacklisted = new ArrayList<String>();
 		String temp = "";
@@ -31,7 +34,14 @@ public class Filter {
 		sc.close();
 	}
 	
-	public Boolean filtering(String word) {
+	/**
+	 * 
+	 * Funcao que checa se a palavra passada esta na blacklist
+	 * 
+	 * @param  word Palavra que sera checada
+	 * @return retorna true se a palavra esta na blacklist e falso se nao estiver
+	 * */
+	public Boolean inBlacklist(String word) {
 		for(String s : blacklisted) {
 			if(word == s) {
 				return true;
@@ -39,20 +49,20 @@ public class Filter {
 		}
 		return false;
 	}
-	public void print() {
-		for(String s : blacklisted) {
-			System.out.println(s + "\n");
-		}
-	}
 	
-	public static String removeAccents(String word) {
+	/**
+	 * Funcao para remover acentos de uma palavra
+	 * 
+	 * @param  word Palavra que sera normalizada
+	 * @return A palavra ja normalizada
+	 * */
+	public String removeAccents(String word) {
 		word = Normalizer.normalize(word, Normalizer.Form.NFD);
-		word = word.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
-		return word;
+		return word.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
 	}
 	
 	public static void main(String[] args ) {
 		Filter filter = new Filter();
-		filter.print();
+		System.out.println(filter.removeAccents("Rogério"));
 	}
 }
