@@ -85,7 +85,7 @@ public class DataManager {
 	 * Adiciona um arquivo a database
 	 * @param str Nome/File do arquivo a ser adicionado
 	 */
-	public addFile(String str)
+	public addFile(String str)	//addfiles??????
 	{
 		//Cria uma copia do arquivo apontado e o salva na database, subcrevendo-o caso ja exista na database.
 		
