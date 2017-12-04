@@ -84,7 +84,7 @@ public class Filter {
 	 * */
 	public Boolean invalidString(String word) {
 		for(char c : invalidChars) {
-			if(word.indexOf(c) == -1) {
+			if(word.indexOf(c) != -1) {
 				return true;
 			}
 		}
