@@ -13,7 +13,7 @@ public class Filter {
 	public Filter() {
 		File file = new File(System.getProperty("user.dir") + "/blacklist");
 		try {
-			Scanner sc = new Scanner(file).useDelimiter("/n");
+			Scanner sc = new Scanner(file).useDelimiter("\n");
 			createBlacklist(sc);
 			sc.close();
 		} catch (FileNotFoundException e) {
@@ -21,7 +21,7 @@ public class Filter {
 		}
 		file = new File(System.getProperty("user.dir") + "/invalid_characters");
 		try {
-			Scanner sc = new Scanner(file).useDelimiter("/n");
+			Scanner sc = new Scanner(file).useDelimiter("\n");
 			createInvChars(sc);
 			sc.close();
 		} catch (FileNotFoundException e) {
@@ -37,7 +37,7 @@ public class Filter {
 	 * 
 	 * @param  sc  Um objeto do tipo Scanner que lê o arquivo que foi passado
 	 * */
-	public void createInvChars(Scanner sc) {
+	private void createInvChars(Scanner sc) {
 		invalidChars = new ArrayList<Character>();
 		while(sc.hasNext()) {
 			invalidChars.add(sc.next().charAt(0));
@@ -50,7 +50,7 @@ public class Filter {
 	 * 
 	 * @param  sc  Um objeto do tipo Scanner que lê o arquivo que foi passado
 	 * */
-	public void createBlacklist(Scanner sc) {
+	private void createBlacklist(Scanner sc) {
 		blacklisted = new ArrayList<String>();
 		String temp = "";
 		while (sc.hasNext()) {
@@ -77,18 +77,53 @@ public class Filter {
 	
 	/**
 	 * 
-	 * Funcao que checa se a palavra possui um caractere invalido
+	 * Funcao que checa se a palavra possui um caracter invalida
 	 * 
 	 * @param  word Palavra que sera checada
 	 * @return retorna true se a palavra possuir e falso se nao
 	 * */
-	public Boolean invalidString(String word) {
+	public Boolean invalidChar(String word) {
 		for(char c : invalidChars) {
 			if(word.indexOf(c) != -1) {
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 
+	 * Funcao que recebe uma string e e remove todos os caracteres invalidos dela
+	 * 
+	 * @param  word Palavra que sera checada
+	 * @return word A palavra com os caracteres invlidos removidos
+	 * */
+	public String rmvInvalidChar(String word) {
+		for(char c : invalidChars) {
+			if(word.indexOf(c) != -1) {
+				String temp = "" + c;
+				word.replace(temp, "");
+			}
+		}
+		return word.toLowerCase();
+	}
+	
+	/**
+	 * Funcao que recebe a entrada e retorna um array list que contem as palavras encontradas
+	 * que existem na blacklist
+	 * @param search entrada do usuario
+	 * @return array list de strings 
+	 */
+	public ArrayList<String> getBlacklistedWords(String search) {
+		ArrayList<String> bledWords = new ArrayList<String>();
+		String[] temp;
+		temp = search.split(" ");
+		for(String s : temp) {
+			if(inBlacklist(s)) {
+				bledWords.add(s);
+			}
+		}
+		return bledWords;
 	}
 	
 	/**

@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -18,7 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
+import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -32,20 +31,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainWindow{
 	
 	private JFrame frame;
 	private JFrame listFrame;
-	private JTextArea listArea;
 	private JTextField searchField;
 	private JButton searchBtn;
 	private JTextArea resultsArea;
 	private JFileChooser fc;
 	private DefaultListModel filesL;
 	private JList<String>filesList;
+	private Filter filter;
 
 	/**
 	 * Launch the application.tet
@@ -89,9 +86,12 @@ public class MainWindow{
 		//Pack all components and set the window visible
 		frame.pack();
 		frame.setVisible(true);
-		
+		filter = new Filter();
 	}
-	
+	/**
+	 * Function for createing the menu bar in the window
+	 * @param frame frame where the menu bar will be created
+	 */
 	public void makeMenuBar(JFrame frame) {
 		//Initializes the top menu bar and set it to the main frame
 		JMenuBar menuBar = new JMenuBar();
@@ -104,12 +104,20 @@ public class MainWindow{
 		//Creates the item About, which will contain information about the system and how use it
 		JMenuItem item = new JMenuItem("About");
 		item.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) { /*openFile();*/ }
+			public void actionPerformed(ActionEvent e) { 
+				JOptionPane.showMessageDialog(null,"This program is used to search the ocurrences"
+						+ "of one or more specific keywords on the txt files in the folder database"
+						+ ""); 
+			}
 		});
 		//add the item to the menu Help
 		menu.add(item);
 	}
 	
+	/**
+	 * Function to fill the frame
+	 * @param frame frame that will be filled
+	 */
 	public void fillContentPane(JFrame frame) {
 		
 		//Creates a object container that will be used to add components to the main window
@@ -155,7 +163,16 @@ public class MainWindow{
 		//once pressed will capture the text on the text field and start the search
 		searchBtn = new JButton("Search");
 		searchBtn.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {  }
+			public void actionPerformed(ActionEvent e) {  
+				String searchStr = searchField.getText();
+				String bledWords = filter.getBlacklistedWords(searchStr).toString(); 
+				if(!bledWords.isEmpty()) {
+					JOptionPane.showMessageDialog(null,"Há palavras inválidas na busca passada: \n"
+							+ bledWords); 
+				}
+				resultsArea.setText(null);
+				resultsArea.append(searchStr + "\n");
+			}
 		});
 		
 		//add the search button to the generic panel
@@ -217,27 +234,37 @@ public class MainWindow{
 		//add the text area to the center position on the main frame
 		contentpane.add(resultsArea,BorderLayout.CENTER);
 	}
+	/**
+	 * 
+	 * Function responsible for adding a selected file to the folder db
+	 * 
+	 * @param  selectedFile file that will be added
+	 * */
 	public void addToDb(File selectedFile) {
 		
         String filePath = selectedFile.getAbsolutePath();
         InputStream inStream = null;
         OutputStream outStream = null;
         try{
+        	//source of the file
             File source =new File(filePath);
+            //destination of the file(creates a file with same name on the db folder)
             File dest =new File(System.getProperty("user.dir") + "/db",selectedFile.getName());
             inStream = new FileInputStream(source);
             outStream = new FileOutputStream(dest);
-
+            
+            //copy the content of the source file to the copy file
             byte[] buffer = new byte[1024];
-
             int length;
             while ((length = inStream.read(buffer)) > 0){
                 outStream.write(buffer, 0, length);
             }
-
+            
+            //close the output and the input
             if (inStream != null)inStream.close();
             if (outStream != null)outStream.close();
             
+            //add the name of the file to the file list
             filesL.addElement(selectedFile.getName());
             JOptionPane.showMessageDialog(null,"File added successfully");
         	
