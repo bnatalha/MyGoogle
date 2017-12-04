@@ -16,27 +16,27 @@ public class LeitorArquivo {
 	 * @return Numero de vezes que a palavra foi encontrada no arquivo.
 	 * */
     public int read(String Caminho, String entrada){
-        int cont = 0;
+        int cont = 0;	// numero de vezes que entrada foi encontrado em 'caminho'
         try {
             FileReader arq = new FileReader(Caminho);
-            BufferedReader lerArq = new BufferedReader(arq);
+            BufferedReader lerArq = new BufferedReader(arq);	// buffer com o caminho
             String linha="";
             try {
-                linha = lerArq.readLine();
-                while(linha!=null){
-                	if(linha.toLowerCase().contains(entrada.toLowerCase())) {
-            			cont++;
+                linha = lerArq.readLine();	//contem linha do arquivo
+                while(linha!=null){	//enquanto tiver liinha no buffer
+                	if(linha.toLowerCase().contains(entrada.toLowerCase())) {	//(tudo pra lowcase) se linha tiver entrada uma vez
+            			cont++;	//aumenta o cont
             		}
-                    linha = lerArq.readLine();
+                    linha = lerArq.readLine();	 //ler proxima linha
                 }
                 arq.close();
-                return cont;
+                return cont;	// retorna qnatidade
             } catch (IOException ex) {
-                System.out.println("Erro: N„o foi possÌvel ler o arquivo!");
+                System.out.println("Erro: N√£o foi poss√≠vel ler o arquivo!");
                 return 0;
             }
         } catch (FileNotFoundException ex) {
-            System.out.println("Erro: Arquivo n„o encontrado!");
+            System.out.println("Erro: Arquivo n√£o encontrado!");
             return 0;
         }
     }
