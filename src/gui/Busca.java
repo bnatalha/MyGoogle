@@ -16,7 +16,6 @@ public class Busca {
 		this.entrada= entrada;
 		tipo = this.tipoPesquisa(entrada);
 		dados = new ArrayList<IndexItem>();
-		//texto = new ArrayList<String>();
 		IndexItem temp = new IndexItem(entrada);
 		dados.add(temp);
 	}

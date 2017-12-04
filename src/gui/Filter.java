@@ -54,9 +54,9 @@ public class Filter {
 		blacklisted = new ArrayList<String>();
 		String temp = "";
 		while (sc.hasNext()) {
-		      temp = sc.next();
-		      blacklisted.add(temp);
-		    }
+				temp = sc.next();
+				blacklisted.add(temp);
+		}
 	}
 	
 	/**
@@ -68,7 +68,8 @@ public class Filter {
 	 * */
 	public Boolean inBlacklist(String word) {
 		for(String s : blacklisted) {
-			if(word == s) {
+			if(word.equals(s)) {
+				
 				return true;
 			}
 		}
@@ -116,6 +117,8 @@ public class Filter {
 	 */
 	public ArrayList<String> getBlacklistedWords(String search) {
 		ArrayList<String> bledWords = new ArrayList<String>();
+		StringBuilder sb = new StringBuilder();
+		
 		String[] temp;
 		temp = search.split(" ");
 		for(String s : temp) {

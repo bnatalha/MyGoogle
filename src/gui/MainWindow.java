@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -86,6 +87,8 @@ public class MainWindow{
 		//Pack all components and set the window visible
 		frame.pack();
 		frame.setVisible(true);
+		
+		//initialize filter object
 		filter = new Filter();
 	}
 	/**
@@ -105,9 +108,9 @@ public class MainWindow{
 		JMenuItem item = new JMenuItem("About");
 		item.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) { 
-				JOptionPane.showMessageDialog(null,"This program is used to search the ocurrences"
-						+ "of one or more specific keywords on the txt files in the folder database"
-						+ ""); 
+				JOptionPane.showMessageDialog(null,"This program is used to search the ocurrences\n"
+						+ "of one or more specific keywords on the txt files in the folder database\n"
+						+ "and returns all the occurrences of the keyword(s)"); 
 			}
 		});
 		//add the item to the menu Help
@@ -134,7 +137,7 @@ public class MainWindow{
 		
 		//Creates the text field where the user will type the word they want to search
 		searchField = new JTextField("Type your search");
-		searchField.setColumns(40);
+		searchField.setColumns(30);
 		
 		//Sets a focus listener to the text field to show the "Type your search here" message, 
 		// which will disappear when the user clicks on the text field, 
@@ -165,13 +168,13 @@ public class MainWindow{
 		searchBtn.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {  
 				String searchStr = searchField.getText();
-				String bledWords = filter.getBlacklistedWords(searchStr).toString(); 
+				ArrayList<String> bledWords = filter.getBlacklistedWords(searchStr); 
 				if(!bledWords.isEmpty()) {
-					JOptionPane.showMessageDialog(null,"Há palavras inválidas na busca passada: \n"
-							+ bledWords); 
+					JOptionPane.showMessageDialog(null,"Uma ou mais palavras invalidas: "
+							+ "\n" + bledWords); 
 				}
 				resultsArea.setText(null);
-				resultsArea.append(searchStr + "\n");
+				
 			}
 		});
 		
@@ -197,6 +200,7 @@ public class MainWindow{
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File selectedFile = fc.getSelectedFile();
 					addToDb(selectedFile);
+					
 	            }
 			}
 		});
@@ -210,6 +214,7 @@ public class MainWindow{
 		JButton listBtn = new JButton("List/Remove Files...");
 		listBtn.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
+				listFrame.pack();
 				listFrame.setVisible(true);
 				frame.setEnabled(false);
 			}
@@ -276,6 +281,7 @@ public class MainWindow{
 	public void listWindow() {
 		//Initialize the list window frame
 		listFrame = new JFrame("File list");
+		listFrame.setBounds(150, 150, 450, 300);
 		
 		//initialize content pane so it can be filled
 		Container contentpane = listFrame.getContentPane();
@@ -319,7 +325,6 @@ public class MainWindow{
 		
 		//pack and make the window invisible
 		listFrame.pack();
-		listFrame.setVisible(false);
 	}
 	
 	public void removeFile(String path){
