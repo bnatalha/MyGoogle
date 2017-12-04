@@ -8,16 +8,42 @@ import java.util.Scanner;
 
 public class Filter {
 	private ArrayList<String> blacklisted;
+	private ArrayList<Character> invalidChars;
 	
 	public Filter() {
-		File blacklist = new File(System.getProperty("user.dir") + "/blacklist");
+		File file = new File(System.getProperty("user.dir") + "/blacklist");
 		try {
-			Scanner sc = new Scanner(blacklist).useDelimiter("/n");
+			Scanner sc = new Scanner(file).useDelimiter("/n");
 			createBlacklist(sc);
+			sc.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		file = new File(System.getProperty("user.dir") + "/invalid_characters");
+		try {
+			Scanner sc = new Scanner(file).useDelimiter("/n");
+			createInvChars(sc);
+			sc.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
+	
+	/**
+	 * 
+	 * Funcao que cria um arraylist de Characters para salvar as caracteres considerados invalidos
+	 * 
+	 * @param  sc  Um objeto do tipo Scanner que lê o arquivo que foi passado
+	 * */
+	public void createInvChars(Scanner sc) {
+		invalidChars = new ArrayList<Character>();
+		while(sc.hasNext()) {
+			invalidChars.add(sc.next().charAt(0));
+		}
+	}
+	
 	/**
 	 * 
 	 * Funcao que cria um arraylist de Strings para salvar as palavras da blacklist
@@ -31,7 +57,6 @@ public class Filter {
 		      temp = sc.next();
 		      blacklisted.add(temp);
 		    }
-		sc.close();
 	}
 	
 	/**
@@ -44,6 +69,22 @@ public class Filter {
 	public Boolean inBlacklist(String word) {
 		for(String s : blacklisted) {
 			if(word == s) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * Funcao que checa se a palavra possui um caractere invalido
+	 * 
+	 * @param  word Palavra que sera checada
+	 * @return retorna true se a palavra possuir e falso se nao
+	 * */
+	public Boolean invalidString(String word) {
+		for(char c : invalidChars) {
+			if(word.indexOf(c) == -1) {
 				return true;
 			}
 		}
