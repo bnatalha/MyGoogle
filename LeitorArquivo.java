@@ -11,9 +11,9 @@ public class LeitorArquivo {
 	 * 
 	 * Funcao responsavel por executar leitura do arquivo.
 	 * 
-	 * @param  Caminho  Caminho para o arquivo.
-	 * @param  Entrada  Contem a string que o usuario pesquisou.
-	 * @return Numero de vezes que a palavra foi encontrada no arquivo.
+	 * @param  Caminho  direção(caminho) para o arquivo.
+	 * @param  Entrada  entrada contendo a string que o usuario pesquisou.
+	 * @return Número de vezes que a palavra foi encontrada no arquivo.
 	 * */
     public int read(String Caminho, String entrada){
         int cont = 0;	// numero de vezes que entrada foi encontrado em 'caminho'
@@ -32,11 +32,11 @@ public class LeitorArquivo {
                 arq.close();
                 return cont;	// retorna qnatidade
             } catch (IOException ex) {
-                System.out.println("Erro: Não foi possível ler o arquivo!");
+                System.out.println("Erro: Não foi possível ler o arquivo!");   //erro -> caso não for possível ler o arquivo
                 return 0;
             }
         } catch (FileNotFoundException ex) {
-            System.out.println("Erro: Arquivo não encontrado!");
+            System.out.println("Erro: Arquivo não encontrado!");   //erro -> caso o arquivo não seja encontrado
             return 0;
         }
     }
